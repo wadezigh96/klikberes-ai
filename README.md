@@ -1,28 +1,44 @@
 # KlikBeres AI
 
-**Human-approved task assistant prototype.**
+**Tell it what to do. Watch it get done. Stay in control.**
 
-The full project lives in the [`klikberes-ai/`](./klikberes-ai) directory.
+Human-approved task assistant for the KaneCLI Online Hackathon.
 
-## Quick Start
+Turns a natural-language request into a reviewable plan, waits for explicit approval, runs a safe local demo, and records verifiable evidence.
+
+**Live demo:** https://klikberes-ai.vercel.app  
+**Repo:** https://github.com/wadezigh96/klikberes-ai
+
+## Quick start
 
 ```bash
-cd klikberes-ai
-npm install   # no runtime deps, but for clarity
 npm test
 npm run dev
 ```
 
 Open http://localhost:4173
 
-## Live Demo
+## Kane CLI verification
 
-https://klikberes-ai.vercel.app
+```bash
+npm install -g @testmuai/kane-cli
+kane-cli login
+kane-cli plugin install remote-execution
+APP_URL=https://your-live-url.vercel.app npm run kane
+```
 
-> **Vercel tip:** Set the Root Directory to `klikberes-ai` in Project Settings if the deployment shows 404.
+Evidence: `artifacts/kane-latest.ndjson` + `artifacts/kane-latest.exit`
 
 ## Documentation
 
-See the inner `klikberes-ai/README.md`, `docs/`, and `AGENTS.md` for full details, architecture, demo script, and Kane verification loop.
+- [DEPLOY.md](./DEPLOY.md) — Vercel deployment
+- [HACKATHON.md](./HACKATHON.md) — submission pack
+- [POSTS.md](./POSTS.md) — LinkedIn & X drafts
+- [scripts/closed-loop-example.md](./scripts/closed-loop-example.md) — Kane → agent feedback loop
+- [docs/DEMO_SCRIPT.md](./docs/DEMO_SCRIPT.md) — 3–5 min video script
 
-Built with safety-first principles for hackathon demos.
+## Safety
+
+Local-only demo. Approval gate enforced on the server. Evidence always records `submittedToExternalWebsite: false`.
+
+Built for people who want AI to help, not take over.
