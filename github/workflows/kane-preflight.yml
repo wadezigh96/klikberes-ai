@@ -1,0 +1,65 @@
+
+name: Kane Remote Preflight
+
+on:
+  workflow_dispatch:
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run project tests
+        run: npm test
+
+      - name: Check live app health
+        run: |
+          curl --fail --silent --show-error \
+            https://klikberes-ai.vercel.app/api/health
+
+      - name: Resolve test URL placeholder
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path("tests/klikberes_test.md")
+          text = p.read_text()
+          placeholder = "__APP_URL__"
+          url = "https://klikberes-ai.vercel.app"
+
+          if text.count(placeholder) != 1:
+              raise SystemExit("Expected exactly one APP_URL placeholder")
+
+          p.write_text(text.replace(placeholder, url))
+          print("Test URL resolved for CI workspace only.")
+          PY
+
+      - name: Install Kane CLI
+        run: npm install -g @testmuai/kane-cli
+
+      - name: Install remote execution plugin
+        run: kane-cli plugin install remote-execution
+
+      - name: Kane remote preflight (dry run only)
+        env:
+          LT_USERNAME: ${{ secrets.LT_USERNAME }}
+          LT_ACCESS_KEY: ${{ secrets.LT_ACCESS_KEY }}
+        run: |
+          kane-cli testrun run tests/klikberes_test.md \
+            --remote \
+            --dry-run \
+            --agent \
+            --username "$LT_USERNAME" \
+            --access-key "$LT_ACCESS_KEY"
