@@ -81,7 +81,7 @@ async function api(path, options = {}) {
 
 function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, char => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    "&": "&", "<": "<", ">": ">", '"': """, "'": "&#39;"
   })[char]);
 }
 
@@ -120,7 +120,12 @@ function render() {
           </form>
         </div>` : ""}
       ${task.status === "completed" && task.evidence ? `
-        <div class="evidence"><strong>${t("evidenceTitle")}</strong><p>${t("evidenceDesc")}</p><code>${t("external")}: ${task.evidence.submittedToExternalWebsite ? "YES" : "NO"} \u00b7 ${t("verified")}: ${task.evidence.verified ? "YES" : "NO"}</code></div>` : ""}
+        <div class="evidence">
+          <strong>${t("evidenceTitle")}</strong>
+          <p>${t("evidenceDesc")}</p>
+          ${task.evidence.fields ? `<p><strong>Name:</strong> ${escapeHtml(task.evidence.fields.fullName || "")} \u00b7 <strong>Email:</strong> ${escapeHtml(task.evidence.fields.email || "")}</p>` : ""}
+          <code>${t("external")}: ${task.evidence.submittedToExternalWebsite ? "YES" : "NO"} \u00b7 ${t("verified")}: ${task.evidence.verified ? "YES" : "NO"}</code>
+        </div>` : ""}
     </article>
   `).join("");
 }
