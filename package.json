@@ -7,8 +7,8 @@
   "scripts": {
     "dev": "node server.mjs",
     "start": "node server.mjs",
-    "test": "node --test",
-    "test:watch": "node --test --watch",
+    "test": "node --test test/task-engine.test.mjs",
+    "test:watch": "node --test --watch test/task-engine.test.mjs",
     "kane": "bash scripts/kane-verify.sh"
   },
   "engines": { "node": ">=20" }

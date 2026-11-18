@@ -1,32 +1,11 @@
-import { createPlan, executeTask } from "../src/task-engine.mjs";
-
-const tasks = new Map();
+import { context, createTask, limitedBody, listTasks, method } from "./_shared.mjs";
 
 export default async function handler(req, res) {
-  if (req.method === "GET") {
-    return res.status(200).json({ tasks: Array.from(tasks.values()) });
-  }
-
+  const ownerId = context(req, res);
+  if (req.method === "GET") return res.status(200).json({ tasks: listTasks(ownerId) });
   if (req.method === "POST") {
-    const { title, description } = req.body || {};
-    if (!title || !description) {
-      return res.status(400).json({ error: "title and description required" });
-    }
-
-    const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-    const plan = createPlan(description);
-    const task = {
-      id,
-      title,
-      description,
-      status: "awaiting_approval",
-      plan,
-      evidence: null,
-      createdAt: new Date().toISOString(),
-    };
-    tasks.set(id, task);
-    return res.status(201).json(task);
+    try { return res.status(201).json({ task: await createTask(limitedBody(req), ownerId) }); }
+    catch (error) { return res.status(error.code === "NOT_FOUND" ? 404 : 422).json({ error: error.message }); }
   }
-
-  res.status(405).json({ error: "Method not allowed" });
+  return method(res, ["GET", "POST"]);
 }

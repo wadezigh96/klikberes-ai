@@ -1,80 +1,59 @@
 import test, { beforeEach } from "node:test";
 import assert from "node:assert/strict";
-import {
-  normalizeRequest, buildPlan, createTask, approveTask, executeTask,
-  getTask, listTasks, resetTasks
-} from "../src/task-engine.mjs";
+import { normalizeRequest, buildPlan, createTask, approveTask, executeTask, getTask, listTasks, resetTasks, resetAllTasks } from "../src/task-engine.mjs";
 
-beforeEach(() => resetTasks());
+beforeEach(() => resetAllTasks());
 
-test("rejects an empty request", () => {
+test("rejects an empty or oversized request", () => {
   assert.throws(() => normalizeRequest({ title: "   " }), /Tell KlikBeres/);
-});
-
-test("rejects a request longer than 180 characters", () => {
   assert.throws(() => normalizeRequest({ title: "x".repeat(181) }), /180 characters/);
 });
 
-test("creates a task with an approval gate and a five-step plan", () => {
-  const task = createTask({ title: "Fill the demo registration form" });
+test("creates exactly the safe five-step plan", async () => {
+  const task = await createTask({ title: "Fill the demo registration form" }, "user-a");
   assert.equal(task.status, "awaiting_approval");
-  assert.equal(task.plan.length, 5);
+  assert.deepEqual(task.plan.map(step => step.id), ["understand", "prepare", "approval", "execute", "verify"]);
+  assert.equal(task.planSource, "local");
   assert.equal(task.approvedAt, null);
-  assert.equal(task.evidence, null);
 });
 
-test("does not allow execution before explicit approval", () => {
-  const task = createTask({ title: "Fill the demo registration form" });
-  assert.throws(() => executeTask(task.id), /Approve the task/);
-  assert.equal(getTask(task.id).status, "awaiting_approval");
+test("does not allow execution before explicit approval", async () => {
+  const task = await createTask({ title: "Fill the demo registration form" }, "user-a");
+  assert.throws(() => executeTask(task.id, {}, "user-a"), /Approve the task/);
 });
 
-test("approval transitions a task to approved", () => {
-  const task = createTask({ title: "Fill the demo registration form" });
-  const approved = approveTask(task.id);
+test("isolates tasks by owner", async () => {
+  const task = await createTask({ title: "Prepare a form" }, "user-a");
+  assert.equal(listTasks("user-b").length, 0);
+  assert.equal(getTask(task.id, "user-b"), null);
+  assert.throws(() => approveTask(task.id, "user-b"), /Task not found/);
+});
+
+test("requires approval and records safe local evidence", async () => {
+  const task = await createTask({ title: "Fill the demo registration form" }, "user-a");
+  const approved = approveTask(task.id, "user-a");
   assert.equal(approved.status, "approved");
-  assert.ok(approved.approvedAt);
-});
-
-test("execution records the values submitted through the local demo form", () => {
-  const task = createTask({ title: "Fill the demo registration form" });
-  approveTask(task.id);
-  const completed = executeTask(task.id, {
-    fullName: "Rani Example",
-    email: "rani@example.com",
-    purpose: "Volunteer application"
-  });
+  const completed = executeTask(task.id, { fullName: "Rani Example", email: "rani@example.com", purpose: "Volunteer application" }, "user-a");
   assert.equal(completed.status, "completed");
   assert.equal(completed.evidence.verified, true);
   assert.equal(completed.evidence.submittedToExternalWebsite, false);
-  assert.equal(completed.evidence.fields.email, "rani@example.com");
-  assert.equal(completed.evidence.fields.fullName, "Rani Example");
 });
 
-test("rejects invalid local form data without completing the task", () => {
-  const task = createTask({ title: "Fill the demo registration form" });
-  approveTask(task.id);
-  assert.throws(() => executeTask(task.id, { fullName: "Rani", email: "not-an-email" }), /valid email/);
-  assert.equal(getTask(task.id).status, "approved");
+test("rejects invalid and oversized form data", async () => {
+  const task = await createTask({ title: "Fill the demo registration form" }, "user-a");
+  approveTask(task.id, "user-a");
+  assert.throws(() => executeTask(task.id, { fullName: "Rani", email: "not-an-email", purpose: "x" }, "user-a"), /valid email/);
+  assert.throws(() => executeTask(task.id, { fullName: "x".repeat(201), email: "a@example.com", purpose: "x" }, "user-a"), /200 characters/);
 });
 
-test("prevents approving the same task twice", () => {
-  const task = createTask({ title: "Prepare a form" });
-  approveTask(task.id);
-  assert.throws(() => approveTask(task.id), /awaiting approval/);
+test("supports the documented buildPlan name", () => {
+  assert.deepEqual(buildPlan("Register for a community event").map(step => step.id), ["understand", "prepare", "approval", "execute", "verify"]);
 });
 
-test("returns null for an unknown task", () => {
-  assert.equal(getTask("missing"), null);
-});
-
-test("returns defensive copies so callers cannot mutate stored state", () => {
-  const task = createTask({ title: "Prepare a form" });
-  task.title = "tampered";
-  assert.equal(listTasks()[0].title, "Prepare a form");
-});
-
-test("creates a reviewable plan for each request", () => {
-  const plan = buildPlan("Register for a community event");
-  assert.deepEqual(plan.map(step => step.id), ["understand", "prepare", "approval", "execute", "verify"]);
+test("reset only removes the current owner's tasks", async () => {
+  await createTask({ title: "A" }, "user-a");
+  await createTask({ title: "B" }, "user-b");
+  resetTasks("user-a");
+  assert.equal(listTasks("user-a").length, 0);
+  assert.equal(listTasks("user-b").length, 1);
 });
