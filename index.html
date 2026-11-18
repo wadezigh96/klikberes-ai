@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KlikBeres AI</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="/">
+        <span class="brand-mark">K</span>
+        <span>KlikBeres <span class="brand-accent">AI</span></span>
+      </a>
+      <div class="workspace-label">WORKSPACE</div>
+      <button class="nav-item active"><span>✳</span> Tasks <span class="nav-count" id="task-count">0</span></button>
+      <div class="sidebar-bottom">
+        <div class="trust-card">
+          <div class="trust-icon">✓</div>
+          <strong>Approval gate</strong>
+          <p>Nothing runs until you approve it. Local demo only.</p>
+        </div>
+        <div class="profile">
+          <div class="avatar">W</div>
+          <div><strong>Wade</strong><small>Local demo</small></div>
+          <div class="online-dot"></div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="breadcrumb">Workspace <span>/</span> <strong>Tasks</strong></div>
+        <div class="top-actions">
+          <div class="local-pill"><i></i> Local only</div>
+          <button class="language" id="language-toggle">EN / ID</button>
+        </div>
+      </div>
+
+      <section class="welcome">
+        <div>
+          <div class="eyebrow"><span class="sparkle">✨</span> LESS BUSYWORK</div>
+          <h1>Describe it. <span>Approve it.</span></h1>
+          <p class="welcome-copy">Turn a request into a clear plan. Nothing runs until you approve it.</p>
+        </div>
+        <div class="welcome-art" aria-hidden="true">
+          <div class="orbit orbit-one"></div>
+          <div class="orbit orbit-two"></div>
+          <div class="art-core">✳</div>
+          <div class="float-card float-check">✓ <small>Approved</small></div>
+          <div class="float-card float-task">Plan ready</div>
+        </div>
+      </section>
+
+      <section class="panel composer">
+        <textarea id="task-input" placeholder="Fill the demo community volunteer registration form"></textarea>
+        <div class="composer-footer">
+          <div class="hint"><span>✨</span> Describe → Review → Approve → Run → Verify</div>
+          <button class="primary-button" id="create-task"><span>Build my plan</span> <b>→</b></button>
+        </div>
+        <div class="error-message" id="form-error"></div>
+      </section>
+
+      <div class="suggestions">
+        <span class="suggestion-label">TRY</span>
+        <button class="suggestion-chip" data-prompt="Fill the demo community volunteer registration form">Volunteer form <span>→</span></button>
+        <button class="suggestion-chip" data-prompt="Summarize notes from the community meeting">Summarize notes <span>→</span></button>
+        <button class="suggestion-chip" data-prompt="Draft a short update email for the team">Draft email <span>→</span></button>
+      </div>
+
+      <section class="task-section">
+        <div class="section-heading">
+          <div>
+            <div class="section-kicker">YOUR TASKS</div>
+            <h2>Active plans <span class="live-dot"></span></h2>
+          </div>
+          <button class="text-button" id="reset-demo">Reset demo</button>
+        </div>
+        <div id="task-list" class="task-list"></div>
+      </section>
+
+      <footer>
+        <div>Built for <b>KaneCLI Hackathon</b></div>
+        <div class="footer-safe">Local-only demo · External submission: NO</div>
+      </footer>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script src="/app.js"></script>
+</body>
+</html>
