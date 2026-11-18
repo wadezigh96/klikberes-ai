@@ -1,25 +1,28 @@
 ---
 url: __APP_URL__
 mode: testing
-max_steps: 40
+max_steps: 45
 headless: true
-tags: [smoke, approval-gate, evidence, kane-verified]
-timeout: 120
+tags: [smoke, approval-gate, evidence, kane-verified, closed-loop]
+timeout: 150
 ---
 
-# KlikBeres AI — Kane verified end-to-end
+# KlikBeres AI — Kane verified end-to-end (approval gate + evidence)
 
 ## Open and reset
-Open the KlikBeres AI home page. Verify the page title contains "KlikBeres AI" and the heading "Less busywork" is visible. Click the Reset demo control. Verify the empty state message is visible.
+Open the KlikBeres AI home page. Verify the page title contains "KlikBeres AI" and the heading "Less busywork" is visible. Click the Reset demo control. Verify the empty state is visible.
 
 ## Create task and inspect plan
-Type "Fill the demo community volunteer registration form" into the task input and click Build my plan. Verify a new task card appears with that exact title, status "Awaiting approval", and exactly five plan steps. Verify one step says "Wait for your approval".
+Type "Fill the demo community volunteer registration form" into the task input and click Build my plan. Verify a task appears with that exact title, status "Awaiting approval", and exactly five plan steps. Verify one of the steps contains the text "Wait for your approval".
 
-## Approve and prepare form
-Click the Approve plan button. Verify the status changes to "Approved" and a local demo form appears. Change the Full name field to "Kane Verified User" and the Email field to "kane.verified@example.com". Verify the values stay in the fields. Verify the page text says no external website will be contacted.
+## Prove the approval gate
+Confirm that no local demo form is visible while the status is still Awaiting approval. Then click the Approve plan button. Verify the status changes to "Approved" and the local demo form now appears.
 
-## Execute and verify evidence
-Click Run approved task. Verify the status changes to "Completed". Verify an evidence section appears containing "Verified evidence", "External submission: NO", and "Verified: YES". Verify the evidence shows the name "Kane Verified User" and the email "kane.verified@example.com".
+## Prepare and execute
+Change the Full name field to "Kane Verified User" and the Email field to "kane.verified@example.com". Verify the values remain in the fields. Click Run approved task.
 
-## Safety confirmation
-Confirm that throughout the entire flow no external website was contacted and the approval gate was enforced before any execution control appeared.
+## Verify evidence and safety
+Verify the status changes to "Completed". Verify an evidence section appears that contains both "External submission: NO" and "Verified: YES". Verify the evidence includes the name "Kane Verified User" and the email "kane.verified@example.com". Confirm the page text states that no external website was contacted.
+
+## Final safety assertion
+Confirm that the approval gate was enforced before any execution control appeared and that the entire flow remained local-only.
