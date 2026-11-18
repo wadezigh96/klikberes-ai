@@ -10,12 +10,27 @@ export function normalizeRequest(input) {
 
 export function buildPlan(title) {
   const lower = title.toLowerCase();
-  const isRegistration = /form|daftar|registration|register|signup|sign up/.test(lower);
+  const isRegistration = /form|daftar|registration|register|signup|sign up|volunteer|event/.test(lower);
+  const isResearch = /research|summary|organize|summarize|notes|info|cari/.test(lower);
+  const isEmail = /email|mail|kirim|send/.test(lower);
+
+  const prepareDetail = isRegistration
+    ? "Use sample profile data in the local demo form."
+    : isResearch
+    ? "Gather and structure key points from the request."
+    : isEmail
+    ? "Draft a safe preview of the message (no sending)."
+    : "Prepare a safe preview of the requested action.";
+
+  const executeDetail = isRegistration
+    ? "Fill and complete the local demo registration form."
+    : "Perform the action only in the KlikBeres demo workspace.";
+
   return [
     { id: "understand", label: "Understand the request", detail: "Convert your request into a clear, reviewable plan." },
-    { id: "prepare", label: "Prepare the information", detail: isRegistration ? "Use sample profile data in the local demo form." : "Prepare a safe preview of the requested action." },
+    { id: "prepare", label: "Prepare the information", detail: prepareDetail },
     { id: "approval", label: "Wait for your approval", detail: "Nothing is submitted before you approve it." },
-    { id: "execute", label: "Run the approved task", detail: "Perform the action only in the KlikBeres demo workspace." },
+    { id: "execute", label: "Run the approved task", detail: executeDetail },
     { id: "verify", label: "Verify the outcome", detail: "Check the resulting state and save an evidence record." }
   ];
 }

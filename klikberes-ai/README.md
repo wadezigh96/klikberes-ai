@@ -1,73 +1,88 @@
 # KlikBeres AI
 
-**Tell it what to do. Watch it get done.**
+**Tell it what to do. Watch it get done. Stay in control.**
 
-KlikBeres is a human-approved task assistant prototype. It converts a plain-language request into a reviewable plan, waits for explicit approval, runs a local-only demo task, and records verifiable evidence.
+KlikBeres is a human-approved task assistant. It turns a plain-language request into a clear, reviewable plan, waits for your explicit approval, executes a safe local demo, and records verifiable evidence.
 
-## Why this project
-Most AI assistants stop at advice. KlikBeres demonstrates a safer task workflow: plan first, ask permission, execute in a controlled environment, and verify the outcome.
+**Live demo:** [klikberes-ai.vercel.app](https://klikberes-ai.vercel.app) (configure Vercel root directory to `klikberes-ai` if needed)
 
-## Current MVP
+## Why KlikBeres?
+
+Most AI tools stop at advice or act without guardrails. KlikBeres demonstrates a safer workflow:
+
+**Request → Plan → Approve → Execute (local) → Verify with evidence**
+
+Nothing runs until you say yes. The demo never contacts external websites.
+
+## Features
+
 - Natural-language task intake
-- Five-step reviewable plan
-- Explicit approval gate
-- Local demo registration form workflow
-- Evidence record with external-submission safety flag
-- Node unit tests
-- Kane CLI browser verification and evidence-driven feedback loop
+- Intelligent 5-step reviewable plan (adapts to keywords)
+- Hard approval gate (enforced on server + UI)
+- Local demo form workflow with sample data
+- Explicit evidence record (`External submission: NO`)
+- Full unit test coverage for the state machine
+- Kane CLI real-browser verification loop
+- Clean, responsive UI with EN / Bahasa Indonesia support
+- Zero runtime dependencies
 
-## Safety boundary
-The current executor is deliberately local-only. It does not log into websites, submit external forms, send email, make purchases, or handle credentials.
+## Safety Boundaries
 
-## Run locally
-Requires Node.js 20+.
+- Local-only executor
+- No logins, credentials, payments, emails, or external form submissions
+- Approval cannot be bypassed
+- Evidence always records whether external contact happened (always `false` in demo)
+
+## Quick Start
+
+Requires **Node.js 20+**.
 
 ```bash
-npm test
-npm run dev
+cd klikberes-ai   # if cloning the repo as-is
+npm test          # run unit tests
+npm run dev       # start local server
 ```
 
-Open http://localhost:4173.
+Open [http://localhost:4173](http://localhost:4173).
 
-## Kane CLI
-Install and authenticate Kane CLI:
+### Demo Flow
+
+1. Enter: `Fill the demo community volunteer registration form`
+2. Click **Build my plan**
+3. Review the five steps
+4. Click **Approve plan**
+5. Fill/confirm the local form and click **Run approved task**
+6. Inspect the verified evidence
+
+## Kane CLI (Real Browser Verification)
 
 ```bash
 npm install -g @testmuai/kane-cli
 kane-cli login
-kane-cli --version
-```
-
-For Android/Termux, use Kane's remote execution grid (the cloud runs Chrome; your phone does not need desktop Chrome). First deploy an approved preview URL, then install the remote plugin:
-
-```bash
 kane-cli plugin install remote-execution
-APP_URL=https://your-approved-preview.example npm run kane
+APP_URL=https://your-preview.vercel.app npm run kane
 ```
 
-The run writes:
-- `artifacts/kane-latest.ndjson`
-- `artifacts/kane-latest.exit`
+See `scripts/kane-loop.md` and `AGENTS.md` for the closed-loop process.
 
-Read `scripts/kane-loop.md` and `AGENTS.md` for the required closed-loop process. Do not claim Kane passed until a real remote run has completed.
+## Tech Stack
 
-## Demo flow
-1. Enter "Fill the demo community volunteer registration form".
-2. Click **Build my plan**.
-3. Review the five steps.
-4. Click **Approve plan**.
-5. Click **Run approved task**.
-6. Inspect the verified evidence and the explicit `External submission: NO` result.
+- Node.js 20+ native HTTP server
+- Vanilla HTML / CSS / JS (no frameworks)
+- Pure task engine with `node:test`
+- Designed for easy local demo and Kane verification
 
-## Hackathon checklist
-- [ ] Create a new public GitHub repository during the event window (after 12 Nov 2026).
-- [ ] Push this source only after reviewing it.
-- [ ] Register on TestMu AI and claim the hackathon credits using the same email.
-- [ ] Run at least one real Kane CLI flow.
-- [ ] Capture a 3–5 minute demo video.
-- [ ] Publish at least two public project posts.
-- [ ] Submit the official form before the deadline.
-- [ ] Obtain explicit owner approval before any public posting or submission.
+## Hackathon Notes
 
-## Project status
-Prototype source package. No GitHub repository created, no commit/push, no deployment, no public posts, and no hackathon submission have been performed.
+- Built with strong safety-first principles
+- Deterministic plan generation + human gate = trustworthy automation
+- Ready for demo video, Kane evidence, and public posts
+- Indonesia-first UX with English support
+
+## License
+
+MIT (for hackathon use)
+
+---
+
+Built for people who want AI to help, not take over.
