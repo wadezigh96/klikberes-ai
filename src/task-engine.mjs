@@ -4,6 +4,9 @@ import { approveStoredTask, completeStoredTask, deleteTasks, findTask, insertTas
 
 const PLAN_IDS = ["understand", "prepare", "approval", "execute", "verify"];
 const MAX_FIELD = 200;
+const SAFE_APPROVAL_LABEL = "Wait for your approval";
+const SAFE_APPROVAL_DETAIL = "Nothing is submitted before you approve it.";
+const UNSAFE_ACTION_PATTERN = /external|website|submit|send|contact|password|payment|credential|api key/i;
 
 function error(message, code = "INVALID_REQUEST") {
   return Object.assign(new Error(message), { code });
@@ -42,12 +45,16 @@ export function buildLocalPlan(title) {
 
 export const buildPlan = buildLocalPlan;
 
-function validPlan(plan) {
+export function validPlan(plan) {
   return Array.isArray(plan) && plan.length === PLAN_IDS.length && plan.every((step, index) =>
     step && step.id === PLAN_IDS[index] &&
     typeof step.label === "string" && step.label.trim().length > 0 && step.label.length <= 120 &&
     typeof step.detail === "string" && step.detail.trim().length > 0 && step.detail.length <= 400
-  );
+  ) &&
+    plan[2].label.trim() === SAFE_APPROVAL_LABEL &&
+    plan[2].detail.trim() === SAFE_APPROVAL_DETAIL &&
+    /\b(local|demo|workspace)\b/i.test(plan[3].detail) &&
+    !UNSAFE_ACTION_PATTERN.test(plan[3].detail);
 }
 
 function publicTask(task) {

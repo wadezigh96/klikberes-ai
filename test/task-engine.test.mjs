@@ -1,6 +1,7 @@
 import test, { beforeEach } from "node:test";
 import assert from "node:assert/strict";
-import { normalizeRequest, buildPlan, createTask, approveTask, executeTask, getTask, listTasks, resetTasks, resetAllTasks } from "../src/task-engine.mjs";
+import { normalizeRequest, buildPlan, validPlan, createTask, approveTask, executeTask, getTask, listTasks, resetTasks, resetAllTasks } from "../src/task-engine.mjs";
+import { getSessionId } from "../src/session.mjs";
 
 beforeEach(async () => resetAllTasks());
 
@@ -48,6 +49,18 @@ test("rejects invalid and oversized form data", async () => {
 
 test("supports the documented buildPlan name", () => {
   assert.deepEqual(buildPlan("Register for a community event").map(step => step.id), ["understand", "prepare", "approval", "execute", "verify"]);
+});
+
+test("accepts only LLM plans that preserve the safety gate", () => {
+  const safe = buildPlan("Fill the demo registration form");
+  assert.equal(validPlan(safe), true);
+  assert.equal(validPlan(safe.map((step, index) => index === 2 ? { ...step, detail: "Submit immediately without approval." } : step)), false);
+  assert.equal(validPlan(safe.map((step, index) => index === 3 ? { ...step, detail: "Submit the form to the external website." } : step)), false);
+});
+
+test("ignores malformed session cookies instead of throwing", () => {
+  const id = getSessionId({ headers: { cookie: "kb_session=%E0%A4%A" } });
+  assert.match(id, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
 });
 
 test("reset only removes the current owner's tasks", async () => {

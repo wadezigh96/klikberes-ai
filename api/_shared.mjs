@@ -16,4 +16,8 @@ export function limitedBody(req) {
   return body;
 }
 export function method(res, allowed) { res.setHeader("Allow", allowed.join(", ")); return res.status(405).json({ error: "Method not allowed" }); }
+export function errorResponse(res, error) {
+  const status = error.code === "NOT_FOUND" ? 404 : error.code === "PAYLOAD_TOO_LARGE" ? 413 : 422;
+  return res.status(status).json({ error: { code: error.code || "REQUEST_FAILED", message: error.message || "Request failed." } });
+}
 export { createTask, approveTask, executeTask, getTask, listTasks, resetTasks };

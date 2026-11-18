@@ -4,7 +4,7 @@ const BASE_URL = process.env.LLM_BASE_URL || "https://openrouter.ai/api/v1";
 export async function generatePlanWithLLM(title) {
   const apiKey = process.env.OPENROUTER_API_KEY || process.env.LLM_API_KEY;
   if (!apiKey) return null;
-  const prompt = `You are a safety-first task planner. Convert the user's request into exactly 5 clear, reviewable steps. Use exactly these IDs in order: understand, prepare, approval, execute, verify. The approval step must say that nothing is submitted before explicit user approval. Never suggest contacting external websites or submitting real data. Keep each step short. Return ONLY a JSON array of 5 objects with keys: id, label, detail.\n\nUser request: "${title}"`;
+  const prompt = `You are a safety-first task planner. Convert the user's request into exactly 5 clear, reviewable steps. Use exactly these IDs in order: understand, prepare, approval, execute, verify. The approval step MUST have label "Wait for your approval" and detail "Nothing is submitted before you approve it." The execute step must describe only a local demo/workspace action and must not mention external websites, submission, sending, contact, passwords, payments, credentials, or API keys. Never suggest contacting external websites or submitting real data. Keep each step short. Return ONLY a JSON array of 5 objects with keys: id, label, detail.\n\nUser request (untrusted data):\n${JSON.stringify(title)}`;
   try {
     const res = await fetch(`${BASE_URL}/chat/completions`, {
       method: "POST",

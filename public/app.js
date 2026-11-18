@@ -200,11 +200,6 @@ $("#reset-demo").addEventListener("click", async () => {
   notify(t("notifyReset"));
 });
 
-$("#how-it-works").addEventListener("click", () => {
-  document.querySelector(".welcome").scrollIntoView({ behavior: "smooth" });
-  notify(t("how"));
-});
-
 $("#language-toggle").addEventListener("click", () => {
   lang = lang === "en" ? "id" : "en";
   localStorage.setItem("klikberes-lang", lang);
