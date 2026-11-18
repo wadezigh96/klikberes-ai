@@ -41,7 +41,8 @@ const server = http.createServer(async (req, res) => {
         return send(res, 200, { tasks: listTasks() });
       }
       if (req.method === "POST" && url.pathname === "/api/tasks") {
-        return send(res, 201, { task: createTask(await body(req)) });
+        const task = await createTask(await body(req));
+        return send(res, 201, { task });
       }
       if (req.method === "POST" && url.pathname === "/api/demo/reset") {
         resetTasks();
