@@ -1,7 +1,7 @@
+import { randomUUID } from "node:crypto";
 import { generatePlanWithLLM } from "./llm.mjs";
+import { approveStoredTask, completeStoredTask, deleteTasks, findTask, insertTask, listTasks as listStoredTasks, clearMemory } from "./task-store.mjs";
 
-const tasks = new Map();
-let sequence = 0;
 const PLAN_IDS = ["understand", "prepare", "approval", "execute", "verify"];
 const MAX_FIELD = 200;
 
@@ -50,45 +50,46 @@ function validPlan(plan) {
   );
 }
 
-export async function createTask(input, ownerId = "local-demo") {
-  const title = normalizeRequest(input);
-  const llmPlan = await generatePlanWithLLM(title);
-  const useLLM = validPlan(llmPlan);
-  const plan = useLLM ? llmPlan : buildLocalPlan(title);
-  const id = `KB-${String(++sequence).padStart(4, "0")}`;
-  const task = {
-    id, ownerId, title, status: "awaiting_approval", plan,
-    planSource: useLLM ? "llm" : "local",
-    createdAt: new Date().toISOString(), approvedAt: null, completedAt: null, evidence: null
-  };
-  tasks.set(id, task);
-  return structuredClone(task);
-}
-
-// Avoid exposing the internal owner ID in API responses.
 function publicTask(task) {
+  if (!task) return null;
   const copy = structuredClone(task);
   delete copy.ownerId;
   return copy;
 }
 
-function ownedTask(id, ownerId) {
-  const task = tasks.get(id);
-  if (!task || task.ownerId !== ownerId) throw error("Task not found.", "NOT_FOUND");
-  return task;
+export async function createTask(input, ownerId = "local-demo") {
+  const title = normalizeRequest(input);
+  const llmPlan = await generatePlanWithLLM(title);
+  const useLLM = validPlan(llmPlan);
+  const task = {
+    id: `KB-${randomUUID().replaceAll("-", "").slice(0, 20).toUpperCase()}`,
+    ownerId,
+    title,
+    status: "awaiting_approval",
+    plan: useLLM ? llmPlan : buildLocalPlan(title),
+    planSource: useLLM ? "llm" : "local",
+    createdAt: new Date().toISOString(),
+    approvedAt: null,
+    completedAt: null,
+    evidence: null
+  };
+  const stored = await insertTask(task);
+  return publicTask(stored);
 }
 
-export function approveTask(id, ownerId = "local-demo") {
-  const task = ownedTask(id, ownerId);
-  if (task.status !== "awaiting_approval") throw error("Only tasks awaiting approval can be approved.");
-  task.status = "approved";
-  task.approvedAt = new Date().toISOString();
-  return publicTask(task);
+export async function approveTask(id, ownerId = "local-demo") {
+  const current = await findTask(id, ownerId);
+  if (!current) throw error("Task not found.", "NOT_FOUND");
+  if (current.status !== "awaiting_approval") throw error("Only tasks awaiting approval can be approved.");
+  const updated = await approveStoredTask(id, ownerId);
+  if (!updated) throw error("Only tasks awaiting approval can be approved.");
+  return publicTask(updated);
 }
 
-export function executeTask(id, input = {}, ownerId = "local-demo") {
-  const task = ownedTask(id, ownerId);
-  if (task.status !== "approved") throw error("Approve the task before execution.");
+export async function executeTask(id, input = {}, ownerId = "local-demo") {
+  const current = await findTask(id, ownerId);
+  if (!current) throw error("Task not found.", "NOT_FOUND");
+  if (current.status !== "approved") throw error("Approve the task before execution.");
   const fields = {
     fullName: String(input.fullName ?? "").trim(),
     email: String(input.email ?? "").trim(),
@@ -97,33 +98,35 @@ export function executeTask(id, input = {}, ownerId = "local-demo") {
   if ([fields.fullName, fields.email, fields.purpose].some(value => value.length > MAX_FIELD)) {
     throw error("Form fields must be 200 characters or fewer.");
   }
-  if (!fields.fullName || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email) || !fields.purpose) {
+  if (!fields.fullName || !/^\S+@\S+\.\S+$/.test(fields.email) || !fields.purpose) {
     throw error("Enter a full name, purpose, and valid email before running the demo.");
   }
-  task.status = "completed";
-  task.completedAt = new Date().toISOString();
-  task.evidence = {
-    environment: "KlikBeres local demo", action: "Local demo registration form submitted",
-    submittedToExternalWebsite: false, fields, verified: true,
-    verifiedAt: new Date().toISOString(), planSource: task.planSource
+  const evidence = {
+    environment: "KlikBeres local demo",
+    action: "Local demo registration form submitted",
+    submittedToExternalWebsite: false,
+    fields,
+    verified: true,
+    verifiedAt: new Date().toISOString(),
+    planSource: current.planSource
   };
-  return publicTask(task);
+  const updated = await completeStoredTask(id, ownerId, evidence);
+  if (!updated) throw error("Approve the task before execution.");
+  return publicTask(updated);
 }
 
-export function getTask(id, ownerId = "local-demo") {
-  const task = tasks.get(id);
-  return task && task.ownerId === ownerId ? publicTask(task) : null;
+export async function getTask(id, ownerId = "local-demo") {
+  return publicTask(await findTask(id, ownerId));
 }
 
-export function listTasks(ownerId = "local-demo") {
-  return [...tasks.values()].filter(task => task.ownerId === ownerId).map(publicTask).reverse();
+export async function listTasks(ownerId = "local-demo") {
+  return (await listStoredTasks(ownerId)).map(publicTask);
 }
 
-export function resetTasks(ownerId = "local-demo") {
-  for (const [id, task] of tasks) if (task.ownerId === ownerId) tasks.delete(id);
+export async function resetTasks(ownerId = "local-demo") {
+  await deleteTasks(ownerId);
 }
 
-export function resetAllTasks() {
-  tasks.clear();
-  sequence = 0;
+export async function resetAllTasks() {
+  await clearMemory();
 }

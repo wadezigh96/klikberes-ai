@@ -9,7 +9,9 @@
     "start": "node server.mjs",
     "test": "node --test test/task-engine.test.mjs",
     "test:watch": "node --test --watch test/task-engine.test.mjs",
+    "db:migrate": "node scripts/migrate-db.mjs",
     "kane": "bash scripts/kane-verify.sh"
   },
-  "engines": { "node": ">=20" }
+  "engines": { "node": ">=20" },
+  "dependencies": { "@neondatabase/serverless": "^1.0.2" }
 }

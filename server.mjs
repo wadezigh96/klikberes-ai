@@ -39,17 +39,17 @@ const server = http.createServer(async (req, res) => {
     const cookie = sessionCookie(ownerId);
     if (url.pathname.startsWith("/api/")) {
       if (req.method === "GET" && url.pathname === "/api/health") return send(res, 200, { ok: true, app: "KlikBeres AI", version: "0.1.0" }, undefined, { "set-cookie": cookie });
-      if (req.method === "GET" && url.pathname === "/api/tasks") return send(res, 200, { tasks: listTasks(ownerId) }, undefined, { "set-cookie": cookie });
+      if (req.method === "GET" && url.pathname === "/api/tasks") return send(res, 200, { tasks: await listTasks(ownerId) }, undefined, { "set-cookie": cookie });
       if (req.method === "POST" && url.pathname === "/api/tasks") return send(res, 201, { task: await createTask(await body(req), ownerId) }, undefined, { "set-cookie": cookie });
-      if (req.method === "POST" && url.pathname === "/api/demo/reset") { await body(req); resetTasks(ownerId); return send(res, 200, { ok: true }, undefined, { "set-cookie": cookie }); }
+      if (req.method === "POST" && url.pathname === "/api/demo/reset") { await body(req); await resetTasks(ownerId); return send(res, 200, { ok: true }, undefined, { "set-cookie": cookie }); }
       const match = url.pathname.match(/^\/api\/tasks\/([a-zA-Z0-9_-]+)\/(approve|execute)$/);
       if (match && req.method === "POST") {
         const [, id, action] = match;
-        const task = action === "approve" ? approveTask(id, ownerId) : executeTask(id, await body(req), ownerId);
+        const task = action === "approve" ? await approveTask(id, ownerId) : await executeTask(id, await body(req), ownerId);
         return send(res, 200, { task }, undefined, { "set-cookie": cookie });
       }
       const getMatch = url.pathname.match(/^\/api\/tasks\/([a-zA-Z0-9_-]+)$/);
-      if (getMatch && req.method === "GET") { const task = getTask(getMatch[1], ownerId); return task ? send(res, 200, { task }, undefined, { "set-cookie": cookie }) : send(res, 404, { error: { code: "NOT_FOUND", message: "Task not found." } }); }
+      if (getMatch && req.method === "GET") { const task = await getTask(getMatch[1], ownerId); return task ? send(res, 200, { task }, undefined, { "set-cookie": cookie }) : send(res, 404, { error: { code: "NOT_FOUND", message: "Task not found." } }); }
       return send(res, 404, { error: { code: "NOT_FOUND", message: "API route not found." } });
     }
     const requested = url.pathname === "/" ? "index.html" : decodeURIComponent(url.pathname.slice(1));
