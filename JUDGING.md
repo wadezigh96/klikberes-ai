@@ -25,7 +25,7 @@
 - Example failure → fix path is provided so judges can see the loop is real.
 
 ## Craft (25%)
-- Zero runtime dependencies
+- Minimal runtime dependencies with Neon-backed persistence
 - Clean, responsive UI with EN / Bahasa Indonesia
 - Explicit safety boundaries
 - One-command local start + one-command Kane run

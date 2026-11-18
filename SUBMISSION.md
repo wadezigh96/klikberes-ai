@@ -6,7 +6,7 @@
 
 ## About Your App (copy-paste)
 
-**What we built:** KlikBeres AI turns a natural-language request into a reviewable 5-step plan, enforces an explicit server-side approval gate, runs a safe local demo, and records evidence that no external website was contacted. Optional LLM plan generation falls back to a local planner when no API key is present.
+**What we built:** KlikBeres AI turns a natural-language request into a reviewable 5-step plan, enforces an explicit server-side approval gate, runs a safe local demo, and records evidence that no external website was contacted. Tasks persist in Neon Postgres, while optional LLM plan generation falls back to a local planner when no API key is present.
 
 **Which agent:** Built and iterated with AI coding agents. Kane CLI is the verification layer.
 

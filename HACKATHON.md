@@ -17,7 +17,7 @@
 | Ships | Full live flow: create → plan → approve → execute → evidence |
 | Verified | Kane CLI real-browser test (`tests/klikberes_test.md`) |
 | Closed Loop | `scripts/closed-loop-example.md` + Kane NDJSON feedback |
-| Craft | Zero-dependency, responsive UI, EN/ID, strong safety boundaries |
+| Craft | Minimal dependency footprint, responsive UI, EN/ID, Neon persistence, strong safety boundaries |
 
 ## Mandatory Deliverables
 

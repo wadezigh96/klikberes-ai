@@ -10,8 +10,16 @@ The project now lives at the repository root.
 3. Root Directory: leave as **`.`** (root).
 4. Build Command: leave empty or `echo "No build needed"`.
 5. Output Directory: leave empty.
-6. Install Command: leave empty (zero dependencies).
+6. Install Command: `npm install`.
 7. Deploy.
+
+After connecting Neon through the Vercel Marketplace, initialize the schema from a linked local checkout:
+
+```bash
+vercel env pull .env.local
+npm install
+npm run db:migrate
+```
 
 ### Option B — Vercel CLI
 ```bash
@@ -34,5 +42,5 @@ APP_URL=https://your-project.vercel.app npm run kane
 ## Notes
 - The server listens on `process.env.PORT` (Vercel provides this).
 - Static files are served from `/public`.
-- No environment variables are required for the demo.
+- `DATABASE_URL` must be connected to the Vercel Production environment for persistent task storage.
 - If you still see 404, confirm Root Directory is `.` and the latest commit is deployed.
