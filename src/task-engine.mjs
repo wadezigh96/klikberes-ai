@@ -1,3 +1,5 @@
+import { generatePlanWithLLM } from "./llm.mjs";
+
 let tasks = [];
 let sequence = 0;
 
@@ -8,7 +10,7 @@ export function normalizeRequest(input) {
   return title;
 }
 
-export function buildPlan(title) {
+export function buildLocalPlan(title) {
   const lower = title.toLowerCase();
   const isRegistration = /form|daftar|registration|register|signup|sign up|volunteer|event/.test(lower);
   const isResearch = /research|summary|organize|summarize|notes|info|cari/.test(lower);
@@ -35,13 +37,18 @@ export function buildPlan(title) {
   ];
 }
 
-export function createTask(input) {
+export async function createTask(input) {
   const title = normalizeRequest(input);
+  let plan = await generatePlanWithLLM(title);
+  const source = plan ? "llm" : "local";
+  if (!plan) plan = buildLocalPlan(title);
+
   const task = {
     id: `KB-${String(++sequence).padStart(4, "0")}`,
     title,
     status: "awaiting_approval",
-    plan: buildPlan(title),
+    plan,
+    planSource: source,
     createdAt: new Date().toISOString(),
     approvedAt: null,
     completedAt: null,
@@ -80,7 +87,8 @@ export function executeTask(id, input = {}) {
     submittedToExternalWebsite: false,
     fields,
     verified: true,
-    verifiedAt: new Date().toISOString()
+    verifiedAt: new Date().toISOString(),
+    planSource: task.planSource || "local"
   };
   return structuredClone(task);
 }
