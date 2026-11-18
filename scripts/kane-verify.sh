@@ -23,8 +23,7 @@ if ! curl -fsS "$APP_URL/api/health" >/dev/null 2>&1; then
   exit 2
 fi
 if ! kane-cli plugin doctor remote-execution >/dev/null 2>&1; then
-  echo "Kane remote-execution plugin is not ready. Run: kane-cli plugin install remote-execution"
-  exit 2
+  echo "Warning: local remote-execution binary is unavailable; attempting cloud remote run anyway."
 fi
 sed "s|__APP_URL__|$APP_URL|g" tests/klikberes_test.md > "$GENERATED_TEST"
 set +e
