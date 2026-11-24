@@ -1,0 +1,19 @@
+# Builds the channel-export plugin bundle (`make dist`) from source prepared
+# by build-plugin.sh into ./plugin-src (already checked out at the pinned
+# commit — this Dockerfile does no cloning and no version selection).
+# Server-only plugin (no webapp), so the builder needs Go + make only.
+
+FROM golang:1.25-bookworm
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends make ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /src
+COPY plugin-src/ /src/
+
+# Produces dist/com.mattermost.plugin-channel-export-1.3.0.tar.gz
+RUN make dist \
+ && mkdir -p /out \
+ && cp dist/*.tar.gz /out/ \
+ && ls -la /out/
